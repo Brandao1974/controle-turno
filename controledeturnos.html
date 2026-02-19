@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Controle de Turno</title>
+
+<link rel="manifest" href="manifest.json">
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #0f172a;
+    color: white;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    width: 100%;
+    max-width: 500px;
+    margin: auto;
+    padding: 20px;
+}
+
+.card {
+    background: #111827;
+    padding: 20px;
+    border-radius: 12px;
+    margin-top: 20px;
+}
+
+h2 {
+    text-align: center;
+}
+
+label {
+    font-size: 14px;
+}
+
+input, button {
+    width: 100%;
+    padding: 14px;
+    margin: 8px 0;
+    border-radius: 8px;
+    border: none;
+    font-size: 18px;
+}
+
+input {
+    background: #1f2937;
+    color: white;
+}
+
+button {
+    background: #22c55e;
+    color: white;
+    font-weight: bold;
+}
+
+.resultado {
+    margin-top: 15px;
+    background: #020617;
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 18px;
+}
+
+/* Tablet */
+@media (min-width: 600px) {
+    body {
+        font-size: 18px;
+    }
+}
+
+/* Desktop */
+@media (min-width: 900px) {
+    .container {
+        max-width: 600px;
+    }
+}
+</style>
+</head>
+
+<body>
+<div class="container" id="app"></div>
+
+<script>
+function carregarApp() {
+    let turno = JSON.parse(localStorage.getItem("turnoAtivo"));
+    let app = document.getElementById("app");
+
+    if (!turno) {
+        app.innerHTML = `
+        <div class="card">
+            <h2>Iniciar turno</h2>
+
+            <label>KM inicial</label>
+            <input id="kmInicial" type="number">
+
+            <label>Consumo (km/l)</label>
+            <input id="consumo" type="number" value="10">
+
+            <label>Preço combustível (R$)</label>
+            <input id="preco" type="number" value="6.20">
+
+            <button onclick="iniciarTurno()">Iniciar turno</button>
+        </div>
+        `;
+    } else {
+        app.innerHTML = `
+        <div class="card">
+            <h2>Encerrar turno</hh2>
+            <p>Iniciado em: ${turno.data}</p>
+            <p>KM inicial: ${turno.kmInicial}</p>
+
+            <label>KM final</label>
+            <input id="kmFinal" type="number">
+
+            <label>Faturamento (R$)</label>
+            <input id="faturamento" type="number">
+
+            <label>Gastos extras (R$)</label>
+            <input id="extras" type="number" value="0">
+
+            <button onclick="encerrarTurno()">Encerrar turno</button>
+
+            <div class="resultado" id="resultado"></div>
+        </div>
+        `;
+    }
+}
+
+function iniciarTurno() {
+    let kmInicial = parseFloat(document.getElementById("kmInicial").value);
+    let consumo = parseFloat(document.getElementById("consumo").value);
+    let preco = parseFloat(document.getElementById("preco").value);
+
+    let turno = {
+        kmInicial,
+        consumo,
+        preco,
+        data: new Date().toLocaleString()
+    };
+
+    localStorage.setItem("turnoAtivo", JSON.stringify(turno));
+    carregarApp();
+}
+
+function encerrarTurno() {
+    let turno = JSON.parse(localStorage.getItem("turnoAtivo"));
+
+    let kmFinal = parseFloat(document.getElementById("kmFinal").value);
+    let faturamento = parseFloat(document.getElementById("faturamento").value);
+    let extras = parseFloat(document.getElementById("extras").value);
+
+    let kmRodado = kmFinal - turno.kmInicial;
+    let litros = kmRodado / turno.consumo;
+    let custoComb = litros * turno.preco;
+    let lucro = faturamento - custoComb - extras;
+
+    let resultado = `
+        KM rodado: ${kmRodado.toFixed(1)} km<br>
+        Litros gastos: ${litros.toFixed(2)} L<br>
+        Custo combustível: R$ ${custoComb.toFixed(2)}<br>
+        Lucro líquido: <b>R$ ${lucro.toFixed(2)}</b>
+    `;
+
+    document.getElementById("resultado").innerHTML = resultado;
+
+    localStorage.removeItem("turnoAtivo");
+}
+
+carregarApp();
+</script>
+</body>
+</html>
