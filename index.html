@@ -160,7 +160,22 @@ function encerrarTurno() {
 
     let kmFinal = parseFloat(document.getElementById("kmFinal").value);
     let faturamento = parseFloat(document.getElementById("faturamento").value);
-    let extras = parseFloat(document.getElementById("extras").value);
+    let extras = parseFloat(document.getElementById("extras").value) || 0;
+
+    if (!turno) {
+        alert("Nenhum turno ativo encontrado.");
+        return;
+    }
+
+    if (isNaN(kmFinal) || isNaN(faturamento)) {
+        alert("Preencha KM final e Faturamento corretamente.");
+        return;
+    }
+
+    if (kmFinal <= turno.kmInicial) {
+        alert("KM final deve ser maior que KM inicial.");
+        return;
+    }
 
     let kmRodado = kmFinal - turno.kmInicial;
     let litros = kmRodado / turno.consumo;
@@ -178,8 +193,11 @@ function encerrarTurno() {
     localStorage.setItem("historico", JSON.stringify(historico));
     localStorage.removeItem("turnoAtivo");
 
+    alert("Turno encerrado com sucesso!");
+
     carregarApp();
 }
+
 
 function mostrarHistorico() {
     let historico = JSON.parse(localStorage.getItem("historico")) || [];
@@ -220,4 +238,5 @@ carregarApp();
 
 </body>
 </html>
+
 
